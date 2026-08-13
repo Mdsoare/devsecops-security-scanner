@@ -125,7 +125,7 @@ Exemplo de Saída no Terminal:
 - Exemplo de Saída no Terminal:
 
 ```text
-💣 [SUPER BRUTAL PORT SCAN] ON exemplo.com — 1000 PORTS — 500 THREADS
+💣 [PORT SCAN] ON exemplo.com — 1000 PORTS — 500 THREADS
 🔓 OPEN PORT: 80/tcp → HTTP
 🔓 OPEN PORT: 443/tcp → HTTPS
 ```

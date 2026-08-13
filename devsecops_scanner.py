@@ -250,7 +250,7 @@ def syn_scan_worker(host, port, results, timeout=0.5):
 
 def port_scan(host, max_port=1000, threads=500):
     print(
-        f"{Fore.RED}💣 [SUPER BRUTAL PORT SCAN] ON {host} — {max_port} PORTS — {threads} THREADS{Style.RESET_ALL}"
+        f"{Fore.RED}💣 [PORT SCAN] ON {host} — {max_port} PORTS — {threads} THREADS{Style.RESET_ALL}"
     )
     try:
         target_ip = socket.gethostbyname(host)
