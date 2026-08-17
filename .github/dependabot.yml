@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Monitora as GitHub Actions e Reusable Workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build(deps-dev)"
+      include: "scope"
+
+  # Monitora as dependências Python (PyPI)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "fix(deps)"
+      include: "scope"
