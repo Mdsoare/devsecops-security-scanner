@@ -142,7 +142,7 @@ def hyper_osint(target):
         )
         phones_flat = list(set([p for grupo in phones for p in grupo if p]))
 
-        api_keys = re.findall(
+        chApi = re.findall(
             r"(AIza[0-9A-Za-z_\-]{35})"
             r"|(sk_live_[0-9a-zA-Z]{24})"
             r"|(sk_test_[0-9a-zA-Z]{24})"
@@ -189,17 +189,17 @@ def hyper_osint(target):
             except (socket.gaierror, socket.timeout):
                 pass
 
-        api_keys_flat = [k for grupo in api_keys for k in grupo if k]
+        chApi_flat = [k for grupo in chApi for k in grupo if k]
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        if api_keys_flat:
+        if chApi_flat:
             with open(
-                os.path.join(script_dir, "api_keys_found.txt"),
+                os.path.join(script_dir, "chApi_found.txt"),
                 "w",
                 encoding="utf-8",
             ) as f:
-                for key in api_keys_flat:
-                    f.write(key + "\n")
+                for ky in chApi_flat:
+                    f.write(ky + "\n")
 
         if hashes:
             with open(
@@ -215,7 +215,7 @@ def hyper_osint(target):
             else "None",
             "emails": list(set(emails)),
             "phones": phones_flat,
-            "api_keys": api_keys_flat,
+            "chApi": chApi_flat,
             "hashes": hashes,
             "subdomains": live_subs,
             "comments_count": len(comments),
