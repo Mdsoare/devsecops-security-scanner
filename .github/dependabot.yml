@@ -1,20 +1,6 @@
 version: 2
 updates:
-  # 1. Dependências Python (PyPI / pip)
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "fix(deps)"
-      include: "scope"
-    # Agrupa todas as bibliotecas em um único PR semanal
-    groups:
-      python-dependencies:
-        patterns:
-          - "*"
-
-  # 2. GitHub Actions
+  # 1. GitHub Actions (Workflows e Reusable Actions)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -26,8 +12,22 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-    # Agrupa as actions em um único PR
+    # Agrupa as actions em um único PR para evitar spam de Pull Requests
     groups:
       actions-dependencies:
+        patterns:
+          - "*"
+
+  # 2. Python (PyPI via requirements.txt, Pipfile ou pyproject.toml)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "fix(deps)"
+      include: "scope"
+    # Agrupa todas as bibliotecas em um único PR semanal
+    groups:
+      python-dependencies:
         patterns:
           - "*"
