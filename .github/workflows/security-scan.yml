@@ -1,10 +1,10 @@
-name: DevSecOps Unified Security Scan
+name: DevSecOps Unified Security Scan (Python)
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
 
 permissions:  
   actions: read
@@ -13,21 +13,37 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. SAST - CodeQL (Python)
+  # 1. SAST & Secret Detection - CodeQL, TruffleHog & Bandit
   # ---------------------------------------------------------------------------
-  sast-codeql:
-    name: SAST (CodeQL Analysis)
+  sast-and-secrets:
+    name: SAST & Secret Detection
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Garante inspeção de todo o histórico pelo TruffleHog
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
+          cache: 'pip' # Otimiza execuções subsequentes
 
+      # Validação de Segurança de Secrets (Secret Detection)
+      - name: Scan para detecção de segredos (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+      # SAST Especializado em Python (Bandit)
+      - name: Instalar e rodar Bandit (Python SAST)
+        run: |
+          pip install bandit
+          bandit -r . -x ./tests,./venv -ll
+
+      # SAST Avançado (CodeQL)
       - name: CodeQL Initialization
         uses: github/codeql-action/init@v3
         with:
@@ -37,8 +53,8 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
   # ---------------------------------------------------------------------------
-  # 2. SCA - OSV-Scanner (Multilinguagem: pip, etc.)
+  # 2. SCA - OSV-Scanner (Lê requirements.txt, Pipfile.lock, poetry.lock, etc.)
   # ---------------------------------------------------------------------------
   sca-osv:
     name: SCA (OSV-Scanner)
-    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.0"
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.0
