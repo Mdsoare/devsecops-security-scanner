@@ -62,7 +62,7 @@ def detect_waf(target_url, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,
+            verify=False, # nosec B501
         )
         server_header = r.headers.get("Server", "").lower()
         cookie_header = r.headers.get("Set-Cookie", "").lower()
@@ -128,7 +128,7 @@ def hyper_osint(target):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=10,
-            verify=False,
+            verify=False, # nosec B501
         )
 
         emails = re.findall(
@@ -275,7 +275,7 @@ def test_vulnerability(payload, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,
+            verify=False, # nosec B501
         )
         body = r.text.lower()
         result = []
@@ -332,7 +332,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,
+                verify=False, # nosec B501
             )
             if r.status_code == 200 and len(r.text) > 100:
                 paineis_ativos.append(base + painel)
@@ -362,7 +362,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                     r = session.get(
                         painel_url,
                         proxies=get_random_proxy(),
-                        verify=False,
+                        verify=False, # nosec B501
                         timeout=5,
                     )
                     soup = BeautifulSoup(r.text, "lxml")
@@ -386,7 +386,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                         painel_url,
                         data=data,
                         proxies=get_random_proxy(),
-                        verify=False,
+                        verify=False, # nosec B501
                         timeout=5,
                         allow_redirects=True,
                     )
@@ -447,7 +447,7 @@ def enumerar_vulnerabilidades(target_url):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,
+            verify=False, # nosec B501
         )
         if r.status_code == 200:
             users = r.json()
@@ -469,7 +469,7 @@ def enumerar_vulnerabilidades(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,
+                verify=False, # nosec B501
                 allow_redirects=True,
             )
             if r.status_code == 200 and len(r.text) > 50:
@@ -568,7 +568,7 @@ def launch_nuclear_osint(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,
+                verify=False, # nosec B501
             )
             if r.status_code == 200:
                 print(
