@@ -293,14 +293,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Gerar pacote redistribuível (Wheel / sdist)
+      - name: Gerar pacote redistribuível
         run: |
-          python -m pip install --upgrade pip build rsync
+          python -m pip install --upgrade pip build
           if [ -f pyproject.toml ] || [ -f setup.py ]; then
             python -m build
           else
             mkdir -p build_artifact
-            rsync -av --exclude='build_artifact' --exclude='.git' . build_artifact/
+            cp -r devsecops_scanner.py requirements.txt README.md build_artifact/
           fi
 
       - name: Subir Artefato de Build
