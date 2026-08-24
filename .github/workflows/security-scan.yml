@@ -61,7 +61,7 @@ jobs:
 
       - name: Validar Formatação de Código (Black Check)
         run: |
-          black --check devsecops_scanner.py
+          black --check --diff devsecops_scanner.py
 
   # -------------------------------------------------------------
   # JOB 3: Auditoria Nativa de Dependências (Pip-Audit)
