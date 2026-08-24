@@ -1,0 +1,15 @@
+# Ambientes Virtuais e Caches do Python
+.venv/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+
+# Dependências e Builds
+dist/
+build/
+*.egg-info/
+
+# Relatórios e Dumps SARIF
+*.sarif
+*.json

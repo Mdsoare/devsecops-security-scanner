@@ -1,0 +1,30 @@
+{
+  "horusecCwd": "./",
+  "filterPath": "",
+  "certInsecureSkipVerify": false,
+  "certPath": "",
+  "type": "git",
+  "gitURL": "",
+  "lintVersion": "latest",
+  "repositoryAuthorization": "",
+  "returnErrorIfFoundVulnerability": true,
+  "showProjectTypes": false,
+  "printOutputType": "text",
+  "jsonOutputFilePath": "",
+  "severitiesToIgnore": [
+    "INFO"
+  ],
+  "ignoreFilesCustomRules": [
+    "**/.venv/**",
+    "**/venv/**",
+    "**/env/**",
+    "**/__pycache__/**",
+    "**/.pytest_cache/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.egg-info/**"
+  ],
+  "ignoreRules": [],
+  "toolsToIgnore": [],
+  "customRules": []
+}

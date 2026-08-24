@@ -1,3 +1,4 @@
+# Configuração do GitHub Dependabot para Repositório Python
 version: 2
 updates:
   # 1. GitHub Actions (Workflows e Reusable Actions)
@@ -5,10 +6,20 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci/cd"
+      - "security"
     commit-message:
       prefix: "build(deps-dev)"
       include: "scope"
-    # Ignora atualizações major automáticas para evitar tags/versões inexistentes
+    # Ignora atualizações major automáticas para evitar breaking changes/versões quebradas
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -23,6 +34,16 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+      - "security"
     commit-message:
       prefix: "fix(deps)"
       include: "scope"

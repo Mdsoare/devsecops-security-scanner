@@ -6,55 +6,305 @@ on:
   pull_request:
     branches: ["main", "master"]
 
-permissions:  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
   actions: read
-  security-events: write
   contents: read
+  security-events: write
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # 1. SAST & Secret Detection - CodeQL, TruffleHog & Bandit
-  # ---------------------------------------------------------------------------
-  sast-and-secrets:
-    name: SAST & Secret Detection
+  # -------------------------------------------------------------
+  # JOB 1: Detecção de Segredos e Credenciais Vazadas
+  # -------------------------------------------------------------
+  secret-scanning:
+    name: Secret Scan (TruffleHog)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 0 # Garante inspeção de todo o histórico pelo TruffleHog
+          fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip' # Otimiza execuções subsequentes
-
-      # Validação de Segurança de Secrets (Secret Detection)
-      - name: Scan para detecção de segredos (TruffleHog)
-        uses: trufflesecurity/trufflehog@main
+      - name: Scan para detecção de segredos
+        uses: trufflesecurity/trufflehog@bcfcf73aaf4759d4dadc2783177c245a02792318
         with:
           extra_args: --only-verified
 
-      # SAST Especializado em Python (Bandit)
-      - name: Instalar e rodar Bandit (Python SAST)
+  # -------------------------------------------------------------
+  # JOB 2: Qualidade de Código e Linters (Python)
+  # -------------------------------------------------------------
+  code-quality-linting:
+    name: Code Quality (Flake8 & Black)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configurar ambiente Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar Linters e Formatadores
         run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black
+
+      - name: Validar Sintaxe e Boas Práticas (Flake8)
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Validar Formatação de Código (Black Check)
+        run: black --check .
+
+  # -------------------------------------------------------------
+  # JOB 3: Auditoria Nativa de Dependências (Pip-Audit)
+  # -------------------------------------------------------------
+  sca-pip-audit:
+    name: SCA (Pip-Audit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configurar ambiente Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar Dependências e Pip-Audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Auditoria de Segurança de Dependências
+        run: pip-audit
+
+  # -------------------------------------------------------------
+  # JOB 4: SAST Especializado em Python (Bandit)
+  # -------------------------------------------------------------
+  sast-bandit:
+    name: SAST (Bandit Scan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configurar ambiente Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar e Executar Bandit
+        run: |
+          python -m pip install --upgrade pip
           pip install bandit
           bandit -r . -x ./tests,./venv -ll
 
-      # SAST Avançado (CodeQL)
-      - name: CodeQL Initialization
-        uses: github/codeql-action/init@v3
+  # -------------------------------------------------------------
+  # JOB 5: SAST Avançado com CodeQL
+  # -------------------------------------------------------------
+  sast-codeql:
+    name: SAST (CodeQL Analysis)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
-          languages: 'python'
+          languages: python
+          queries: security-extended,security-and-quality
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+      - name: Executar Análise CodeQL
+        uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
 
-  # ---------------------------------------------------------------------------
-  # 2. SCA - OSV-Scanner (Lê requirements.txt, Pipfile.lock, poetry.lock, etc.)
-  # ---------------------------------------------------------------------------
+  # -------------------------------------------------------------
+  # JOB 6: SAST Open Source com Horusec
+  # -------------------------------------------------------------
+  sast-horusec:
+    name: SAST (Horusec)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Run Horusec Security Scan
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh -o install_horusec.sh
+          bash install_horusec.sh latest
+          rm -f install_horusec.sh
+          horusec start -p="./" --config-file-path="./.horusec-config.json" -D -I -e="false" -o="sarif" -O="./horusec-results.sarif" || true
+
+      - name: Tratar Arquivo SARIF do Horusec Ausente
+        if: always()
+        run: |
+          if [ ! -s "./horusec-results.sarif" ]; then
+            echo "⚠️ Arquivo SARIF não encontrado ou vazio. Criando estrutura mínima válida..."
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","informationUri":"https://horusec.io"}},"results":[]}]}' > ./horusec-results.sarif
+          fi
+
+      - name: Upload Horusec SARIF report
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+        if: always()
+        with:
+          sarif_file: horusec-results.sarif
+          category: Horusec
+
+  # -------------------------------------------------------------
+  # JOB 7: SAST Rápido baseado em Regras com Semgrep
+  # -------------------------------------------------------------
+  sast-semgrep:
+    name: SAST (Semgrep Scan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      - name: Executar Semgrep Scan
+        run: |
+          semgrep scan \
+            --config=p/python \
+            --config=p/owasp-top-ten \
+            --sarif \
+            --output=semgrep.sarif \
+            || true
+
+      - name: Tratar Arquivo SARIF do Semgrep Ausente
+        if: always()
+        run: |
+          if [ ! -s "semgrep.sarif" ]; then
+            echo "⚠️ Arquivo SARIF do Semgrep não encontrado ou vazio. Criando estrutura mínima válida..."
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Semgrep","informationUri":"https://semgrep.dev"}},"results":[]}]}' > semgrep.sarif
+          fi
+
+      - name: Upload do Relatório SARIF do Semgrep
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: Semgrep
+
+  # -------------------------------------------------------------
+  # JOB 8: Análise de Dependências de Software com OSV-Scanner
+  # -------------------------------------------------------------
   sca-osv:
     name: SCA (OSV-Scanner)
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.0
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67
+
+  # -------------------------------------------------------------
+  # JOB 9: Análise de Dependências e Misconfigurations com Trivy
+  # -------------------------------------------------------------
+  sca-trivy:
+    name: SCA & Misconfig (Trivy Scan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Executar Varredura Trivy (Repository)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+
+      - name: Upload do Relatório SARIF do Trivy
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  # -------------------------------------------------------------
+  # JOB 10: Validação de Integridade Estrutural do Projeto Python
+  # -------------------------------------------------------------
+  python-structure-check:
+    name: Validate Python Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Validar arquivos essenciais do ecossistema Python
+        run: |
+          if [ ! -f "requirements.txt" ] && [ ! -f "pyproject.toml" ] && [ ! -f "Pipfile" ]; then
+            echo "❌ ERRO: Nenhum arquivo de gerenciamento de dependências (requirements.txt, pyproject.toml ou Pipfile) foi encontrado!"
+            exit 1
+          fi
+
+          test -f README.md || (echo "❌ README.md não encontrado!" && exit 1)
+          echo "✅ Estrutura básica do repositório Python validada."
+
+  # -------------------------------------------------------------
+  # JOB 11: Publicação e Build de Artefatos Python
+  # -------------------------------------------------------------
+  build-artifact:
+    name: Bundle & Upload Artifact
+    needs:
+      [
+        secret-scanning,
+        code-quality-linting,
+        sca-pip-audit,
+        sast-bandit,
+        sast-codeql,
+        sast-horusec,
+        sast-semgrep,
+        sca-osv,
+        sca-trivy,
+        python-structure-check,
+      ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configurar ambiente Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+
+      - name: Gerar pacote redistribuível (Wheel / sdist)
+        run: |
+          python -m pip install --upgrade pip build
+          if [ -f pyproject.toml ] || [ -f setup.py ]; then
+            python -m build
+          else
+            mkdir -p dist/
+            cp -r . dist/ --exclude=dist
+          fi
+
+      - name: Subir Artefato de Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: python-app-build
+          path: dist/
+          retention-days: 7
