@@ -56,9 +56,7 @@ def get_random_proxy():
 
 
 def detect_waf(target_url, headers):
-    print(
-        f"{Fore.BLUE}🛡️ DETECTANDO A PRESENÇA DE WAF NO ALVO...{Style.RESET_ALL}"
-    )
+    print(f"{Fore.BLUE}🛡️ DETECTANDO A PRESENÇA DE WAF NO ALVO...{Style.RESET_ALL}")
     try:
         r = requests.get(
             target_url,
@@ -87,9 +85,7 @@ def detect_waf(target_url, headers):
             waf_name = "ModSecurity"
 
         AUDIT_REPORT["waf_detected"] = waf_name
-        print(
-            f"{Fore.GREEN}🎯 WAF Identificado: {waf_name}{Style.RESET_ALL}\n"
-        )
+        print(f"{Fore.GREEN}🎯 WAF Identificado: {waf_name}{Style.RESET_ALL}\n")
         return waf_name
     except requests.RequestException:
         return "Erro ao detectar WAF"
@@ -217,25 +213,21 @@ def hyper_osint(target):
 
         AUDIT_REPORT["osint"] = {
             "title": title.get_text() if title else "None",
-            "meta_description": (
-                meta_desc.get("content") if meta_desc else "None"
-            ),
+            "meta_description": (meta_desc.get("content") if meta_desc else "None"),
             "emails": list(set(emails)),
             "phones": phones_flat,
             "chApi": chApi_flat,
             "hashes": hashes,
             "subdomains": live_subs,
-            "comments_count": len(
-                re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)
-            ),
+            "comments_count": len(re.findall(r"<!--(.*?)-->", r.text, re.DOTALL)),
             "server": r.headers.get("Server", "Unknown"),
             "x_powered_by": r.headers.get("X-Powered-By", "None"),
         }
 
         print(f"{Fore.GREEN}🎯 OSINT Concluído com sucesso.{Style.RESET_ALL}")
 
-    except requests.RequestException as fuck:
-        print(f"{Fore.RED}💥 FULL OSINT FAILED: {fuck}{Style.RESET_ALL}")
+    except requests.RequestException as aff:
+        print(f"{Fore.RED}💥 FULL OSINT FAILED: {aff}{Style.RESET_ALL}")
 
 
 def syn_scan_worker(host, port, results, timeout=0.5):
@@ -312,9 +304,7 @@ def test_vulnerability(payload, headers):
             result.append("⚡ XSS REFLETIDO DETECTADO!")
 
         if len(r.text) > 300000:
-            result.append(
-                f"⚠️ RESPOSTA ANÔMALA: {len(r.text)} bytes — possível dump"
-            )
+            result.append(f"⚠️ RESPOSTA ANÔMALA: {len(r.text)} bytes — possível dump")
 
         return result if result else None
     except requests.RequestException:
@@ -403,10 +393,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                     )
 
                     sucesso = (
-                        any(
-                            kw in r2.url
-                            for kw in ["wp-admin", "dashboard", "panel"]
-                        )
+                        any(kw in r2.url for kw in ["wp-admin", "dashboard", "panel"])
                         and r2.status_code == 200
                         and len(r2.text) != len(r.text)
                     )
@@ -420,9 +407,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                         AUDIT_REPORT["credentials"].append(cred)
                         script_dir = os.path.dirname(os.path.abspath(__file__))
                         with open(
-                            os.path.join(
-                                script_dir, "possiveis_credenciais.txt"
-                            ),
+                            os.path.join(script_dir, "possiveis_credenciais.txt"),
                             "a",
                             encoding="utf-8",
                         ) as f:
@@ -436,9 +421,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
 
 
 def enumerar_vulnerabilidades(target_url):
-    print(
-        f"{Fore.MAGENTA}🔎 INICIANDO ENUMERAÇÃO ASSÍNCRONA...{Style.RESET_ALL}"
-    )
+    print(f"{Fore.MAGENTA}🔎 INICIANDO ENUMERAÇÃO ASSÍNCRONA...{Style.RESET_ALL}")
     base = target_url.rstrip("/")
     headers = {"User-Agent": random.choice(USER_AGENTS)}
 
@@ -610,10 +593,9 @@ def launch_nuclear_osint(target_url):
 
 
 if __name__ == "__main__":
-    target = (
-        input(f"{Fore.YELLOW}Enter target (URL or domain):{Style.RESET_ALL} ")
-        .strip()
-    )
+    target = input(
+        f"{Fore.YELLOW}Enter target (URL or domain):{Style.RESET_ALL} "
+    ).strip()
     if not target:
         print("You’re a waste of electricity. Goodbye.")
         sys.exit(1)
