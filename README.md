@@ -1,7 +1,18 @@
 # Framework de Auditoria de Segurança e Reconhecimento DevSecOps
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<!-- Badges do Topo -->
+
+[![CI Pipeline](https://github.com/Mdsoare/devsecops-security-scanner/actions/workflows/security-scan.yml/badge.svg)](https://github.com/Mdsoare/devsecops-security-scanner/actions/workflows/security-scan.yml)
+[![Security Rating](https://img.shields.io/badge/Security-DevSecOps%20Hardened-green?style=flat&logo=github)](https://github.com/Mdsoare/devsecops-security-scanner/security/code-scanning)
+![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+<!-- Tech Stack & DevSecOps Ecosystem -->
+
+![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg?style=for-the-badge&logo=python&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![Dependabot](https://img.shields.io/badge/Dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white)
+![SAST & SCA](https://img.shields.io/badge/DevSecOps-SAST%20%26%20SCA-red?style=for-the-badge&logo=github-actions&logoColor=white)
 
 Uma ferramenta automatizada e modular de reconhecimento e auditoria de segurança, projetada para pipelines DevSecOps, avaliação de vulnerabilidades e testes de intrusão (pentest) web autorizados.
 
@@ -9,12 +20,12 @@ Uma ferramenta automatizada e modular de reconhecimento e auditoria de seguranç
 
 ## 🚀 Principais Recursos
 
-* **WAF Detection:** Identifica automaticamente Web Application Firewalls comuns (Cloudflare, AWS CloudFront, Akamai, ModSecurity, etc.) antes do envio de payloads.
-* **Hyper-OSINT Engine:** Extrai e-mails ocultos, números de telefone, tokens de API (Google, Stripe, GitHub, AWS, JWT), hashes criptográficos e comentários de código-fonte das aplicações alvo.
-* **Asynchronous Path Enumeration & WAF Bypassing:** Utiliza pooling com `gevent` para escanear rapidamente arquivos sensíveis críticos (`.env`, `wp-config.php`, backups, exposição de código-fonte) e testar vetores de bypass de WAF.
-* **High-Performance Port Scanner:** Capacidade de escaneamento de portas assíncrono (estilo TCP SYN) para mapear rapidamente serviços de infraestrutura expostos.
-* **Controlled Credential Brute-Forcing:** Descobre painéis administrativos e realiza validação direcionada utilizando wordlists dinâmicas, filtrando falsos positivos.
-* **Comprehensive Reporting:** Compila automaticamente todas as descobertas em um arquivo estruturado `relatorio_auditoria.json` (para integração com pipelines CI/CD) e em um dashboard interativo moderno e limpo (`relatorio_auditoria.html`).
+- **WAF Detection:** Identifica automaticamente Web Application Firewalls comuns (Cloudflare, AWS CloudFront, Akamai, ModSecurity, etc.) antes do envio de payloads.
+- **Hyper-OSINT Engine:** Extrai e-mails ocultos, números de telefone, tokens de API (Google, Stripe, GitHub, AWS, JWT), hashes criptográficos e comentários de código-fonte das aplicações alvo.
+- **Asynchronous Path Enumeration & WAF Bypassing:** Utiliza pooling com `gevent` para escanear rapidamente arquivos sensíveis críticos (`.env`, `wp-config.php`, backups, exposição de código-fonte) e testar vetores de bypass de WAF.
+- **High-Performance Port Scanner:** Capacidade de escaneamento de portas assíncrono (estilo TCP SYN) para mapear rapidamente serviços de infraestrutura expostos.
+- **Controlled Credential Brute-Forcing:** Descobre painéis administrativos e realiza validação direcionada utilizando wordlists dinâmicas, filtrando falsos positivos.
+- **Comprehensive Reporting:** Compila automaticamente todas as descobertas em um arquivo estruturado `relatorio_auditoria.json` (para integração com pipelines CI/CD) e em um dashboard interativo moderno e limpo (`relatorio_auditoria.html`).
 
 ---
 
@@ -40,7 +51,7 @@ pip install -r requirements.txt
 
 ## 📖 Guia de Uso
 
-### 1.  Visão Geral das Funcionalidades e Exemplos
+### 1. Visão Geral das Funcionalidades e Exemplos
 
 O framework executa uma auditoria modular sequencial: desde a detecção defensiva até a varredura de infraestrutura e exportação de relatórios.
 
@@ -51,6 +62,7 @@ O framework executa uma auditoria modular sequencial: desde a detecção defensi
 ```bash
 python devsecops_scanner.py
 ```
+
 2. Quando solicitado, insira o domínio ou a URL de destino:
 
 ```text
@@ -97,20 +109,20 @@ Exemplo de Saída no Terminal:
 
 ```json
 {
-    "target": "http://exemplo.com",
-    "waf_detected": "Cloudflare WAF",
-    "vulnerabilities": [
-        {
-            "url": "http://exemplo.com/.env",
-            "description": "CRITICO - .env exposto com senhas!"
-        }
-    ]
+  "target": "http://exemplo.com",
+  "waf_detected": "Cloudflare WAF",
+  "vulnerabilities": [
+    {
+      "url": "http://exemplo.com/.env",
+      "description": "CRITICO - .env exposto com senhas!"
+    }
+  ]
 }
 ```
 
 - Exemplo de Verificação de Relatório Visual:
 
-1. O arquivo `relatorio_auditoria.html` gerado automaticamente agrupa as informações de segurança em blocos de cartões estilizados para facilitar a leitura em qualquer navegador web moderno.  
+1. O arquivo `relatorio_auditoria.html` gerado automaticamente agrupa as informações de segurança em blocos de cartões estilizados para facilitar a leitura em qualquer navegador web moderno.
 
 ---
 
@@ -131,6 +143,7 @@ Exemplo de Saída no Terminal:
 🔓 OPEN PORT: 80/tcp → HTTP
 🔓 OPEN PORT: 443/tcp → HTTPS
 ```
+
 ---
 
 5. Enumeração de Diretórios e Força Bruta de Credenciais (`enumerar_vulnerabilidades` & `bruteforce_com_usuarios`)
@@ -176,8 +189,9 @@ Esta ferramenta destina-se estritamente a auditorias de segurança autorizadas, 
 ---
 
 ## 📄 Licença
+
 Distribuído sob a Licença MIT. Consulte o arquivo LICENSE para mais informações.
 
 ---
 
-*Desenvolvido por **Marcelo Soares** | Especialista em Segurança da Informação e Computação Forense.*
+_Desenvolvido por **Marcelo Soares** | Especialista em Segurança da Informação e Computação Forense._
