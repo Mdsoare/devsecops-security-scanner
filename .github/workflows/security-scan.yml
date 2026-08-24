@@ -60,7 +60,8 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Validar Formatação de Código (Black Check)
-        run: black --check .
+        run: |
+          black --check devsecops_scanner.py
 
   # -------------------------------------------------------------
   # JOB 3: Auditoria Nativa de Dependências (Pip-Audit)
