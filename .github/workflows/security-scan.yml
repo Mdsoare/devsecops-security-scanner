@@ -296,12 +296,9 @@ jobs:
       - name: Gerar pacote redistribuível (Wheel / sdist)
         run: |
           python -m pip install --upgrade pip build
-          if [ -f pyproject.toml ] || [ -f setup.py ]; then
-            python -m build
-          else
-            mkdir -p dist/
-            cp -r . dist/ --exclude=dist
-          fi
+          python -m build
+          mkdir -p build_artifact
+          rsync -av --exclude='dist' --exclude='build_artifact' . build_artifact/
 
       - name: Subir Artefato de Build
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
