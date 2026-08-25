@@ -9,13 +9,14 @@ from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 from colorama import Fore, Style, init
-import dns.resolver
+
 from gevent import socket as gsocket
 from gevent.pool import Pool
 import requests
-import urllib3
+#import urllib3
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 init()
 
 # --- CONFIGURAÇÕES E CONSTANTES ---
@@ -47,6 +48,8 @@ AUDIT_REPORT = {
     "credentials": [],
 }
 
+# Permite alterar via argumento ou manter True por padrão
+VERIFY_SSL = True
 
 def get_random_proxy():
     if not PROXIES:
@@ -63,7 +66,7 @@ def detect_waf(target_url, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=True,
+            verify=VERIFY_SSL,
         )
         server_header = r.headers.get("Server", "").lower()
         cookie_header = r.headers.get("Set-Cookie", "").lower()
@@ -131,7 +134,7 @@ def hyper_osint(target):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=10,
-            verify=True,
+            verify=VERIFY_SSL,
         )
 
         emails = re.findall(
@@ -188,7 +191,7 @@ def hyper_osint(target):
                 live_subs.append({"subdomain": test_domain, "ip": ip})
                 print(f"💥 LIVE: {test_domain} → {ip}")
             except (socket.gaierror, socket.timeout):
-                pass
+                continue
 
         chApi_flat = [k for grupo in chApi for k in grupo if k]
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -247,7 +250,7 @@ def syn_scan_worker(host, port, results, timeout=0.5):
             results.append({"port": port, "service": service})
         sock.close()
     except (socket.timeout, socket.error):
-        pass
+        return None
 
 
 def port_scan(host, max_port=1000, threads=500):
@@ -278,7 +281,7 @@ def test_vulnerability(payload, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=True,
+            verify=VERIFY_SSL,
         )
         body = r.text.lower()
         result = []
@@ -333,7 +336,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=True,
+                verify=VERIFY_SSL,
             )
             if r.status_code == 200 and len(r.text) > 100:
                 painel_ativos.append(base + painel)
@@ -363,7 +366,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                     r = session.get(
                         painel_url,
                         proxies=get_random_proxy(),
-                        verify=True,
+                        verify=VERIFY_SSL,
                         timeout=5,
                     )
                     soup = BeautifulSoup(r.text, "lxml")
@@ -387,7 +390,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                         painel_url,
                         data=data,
                         proxies=get_random_proxy(),
-                        verify=True,
+                        verify=VERIFY_SSL,
                         timeout=5,
                         allow_redirects=True,
                     )
@@ -443,7 +446,7 @@ def enumerar_vulnerabilidades(target_url):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=True,
+            verify=VERIFY_SSL,
         )
         if r.status_code == 200:
             users = r.json()
@@ -463,7 +466,7 @@ def enumerar_vulnerabilidades(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=True,
+                verify=VERIFY_SSL,
                 allow_redirects=True,
             )
             if r.status_code == 200 and len(r.text) > 50:
@@ -569,7 +572,7 @@ def launch_nuclear_osint(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=True,
+                verify=VERIFY_SSL,
             )
             if r.status_code == 200:
                 print(
