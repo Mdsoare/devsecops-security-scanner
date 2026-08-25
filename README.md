@@ -176,8 +176,8 @@ Você pode configurar a rotação de proxies ou o roteamento local via Tor edita
 ```python
 PROXIES = [
     # os.getenv("HTTP_PROXY"),
-    # Para usar o Tor localmente descomente abaixo:
-    # "socks5://127.0.0.1:9050"
+    # Exemplo de Proxy HTTP: "http://127.0.0.1:8080"
+    # Exemplo de Proxy Tor local: "socks5://127.0.0.1:9050"
 ]
 ```
 
