@@ -13,9 +13,7 @@ from colorama import Fore, Style, init
 from gevent import socket as gsocket
 from gevent.pool import Pool
 import requests
-# import urllib3
 
-# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 init()
 
 # --- CONFIGURAÇÕES E CONSTANTES ---
