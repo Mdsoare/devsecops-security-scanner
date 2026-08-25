@@ -150,35 +150,20 @@ jobs:
           rm -f install_horusec.sh
           horusec start -p="./" --config-file-path="./.horusec-config.json" -D -I -e="false" -o="sarif" -O="./horusec-results.sarif" || true
 
-      - name: Tratar Arquivo SARIF do Horusec Ausente ou Vazio
+      - name: Tratar e Validar SARIF do Horusec
+        id: check_sarif
         if: always()
         run: |
-          if [ ! -s "./horusec-results.sarif" ] || grep -q '"results": \[\]' ./horusec-results.sarif; then
-            echo "⚠️ SARIF sem achados ou ausente. Gerando estrutura compatível com GitHub API..."
-            cat << 'EOF' > ./horusec-results.sarif
-          {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": [
-              {
-                "tool": {
-                  "driver": {
-                    "name": "Horusec",
-                    "version": "latest",
-                    "informationUri": "https://horusec.io",
-                    "rules": []
-                  }
-                },
-                "results": []
-              }
-            ]
-          }
-          EOF
+          if [ -f "./horusec-results.sarif" ] && grep -q '"results": \[.\+\]' ./horusec-results.sarif; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Horusec não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
+            echo "has_results=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload Horusec SARIF report
         uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
-        if: always()
+        if: always() && steps.check_sarif.outputs.has_results == 'true'
         with:
           sarif_file: horusec-results.sarif
           category: Horusec
@@ -213,17 +198,20 @@ jobs:
             --output=semgrep.sarif \
             || true
 
-      - name: Tratar Arquivo SARIF do Semgrep Ausente
+      - name: Tratar e Validar SARIF do Semgrep
+        id: check_sarif
         if: always()
         run: |
-          if [ ! -s "semgrep.sarif" ]; then
-            echo "⚠️ Arquivo SARIF do Semgrep não encontrado ou vazio. Criando estrutura mínima válida..."
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Semgrep","informationUri":"https://semgrep.dev"}},"results":[]}]}' > semgrep.sarif
+          if [ -f "semgrep.sarif" ] && grep -q '"results": \[.\+\]' semgrep.sarif; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Semgrep não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
+            echo "has_results=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload do Relatório SARIF do Semgrep
         uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
-        if: always()
+        if: always() && steps.check_sarif.outputs.has_results == 'true'
         with:
           sarif_file: semgrep.sarif
           category: Semgrep
