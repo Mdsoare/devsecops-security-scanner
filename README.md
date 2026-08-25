@@ -153,7 +153,7 @@ Exemplo de Saída no Terminal:
 - Exemplo de Saída de Arquivo (`possiveis_credenciais.txt`):
 
 ```text
-VALIDADO - Painel: http://exemplo.com/wp-login.php | User: admin | Pass: admin123
+VALIDADO - Painel: http://exemplo.com/wp-login.php | User: admin | Pass: [REDACTED]
 ```
 
 ---
