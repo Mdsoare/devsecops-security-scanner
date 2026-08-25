@@ -150,12 +150,30 @@ jobs:
           rm -f install_horusec.sh
           horusec start -p="./" --config-file-path="./.horusec-config.json" -D -I -e="false" -o="sarif" -O="./horusec-results.sarif" || true
 
-      - name: Tratar Arquivo SARIF do Horusec Ausente
+      - name: Tratar Arquivo SARIF do Horusec Ausente ou Vazio
         if: always()
         run: |
-          if [ ! -s "./horusec-results.sarif" ]; then
-            echo "⚠️ Arquivo SARIF não encontrado ou vazio. Criando estrutura mínima válida..."
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","informationUri":"https://horusec.io"}},"results":[]}]}' > ./horusec-results.sarif
+          if [ ! -s "./horusec-results.sarif" ] || grep -q '"results": \[\]' ./horusec-results.sarif; then
+            echo "⚠️ SARIF sem achados ou ausente. Gerando estrutura compatível com GitHub API..."
+            cat << 'EOF' > ./horusec-results.sarif
+          {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Horusec",
+                    "version": "latest",
+                    "informationUri": "https://horusec.io",
+                    "rules": []
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
           fi
 
       - name: Upload Horusec SARIF report
