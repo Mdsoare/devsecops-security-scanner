@@ -304,7 +304,7 @@ jobs:
           fi
 
       - name: Subir Artefato de Build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: python-app-build
           path: build_artifact/

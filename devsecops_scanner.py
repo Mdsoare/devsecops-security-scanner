@@ -20,7 +20,7 @@ init()
 
 # --- CONFIGURAÇÕES E CONSTANTES ---
 PROXIES = [
-    # Exemplo: "http://user:pass@ip:port",
+    # os.getenv("HTTP_PROXY"),
     # Para usar o Tor localmente descomente abaixo:
     # "socks5://127.0.0.1:9050"
 ]
@@ -63,7 +63,7 @@ def detect_waf(target_url, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,  # nosec B501
+            verify=True,
         )
         server_header = r.headers.get("Server", "").lower()
         cookie_header = r.headers.get("Set-Cookie", "").lower()
@@ -131,7 +131,7 @@ def hyper_osint(target):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=10,
-            verify=False,  # nosec B501
+            verify=True,
         )
 
         emails = re.findall(
@@ -278,7 +278,7 @@ def test_vulnerability(payload, headers):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,  # nosec B501
+            verify=True,
         )
         body = r.text.lower()
         result = []
@@ -333,12 +333,12 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,  # nosec B501
+                verify=True,
             )
             if r.status_code == 200 and len(r.text) > 100:
                 painel_ativos.append(base + painel)
         except requests.RequestException:
-            pass
+            continue
 
     if not painel_ativos:
         return
@@ -363,7 +363,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                     r = session.get(
                         painel_url,
                         proxies=get_random_proxy(),
-                        verify=False,  # nosec B501
+                        verify=True,
                         timeout=5,
                     )
                     soup = BeautifulSoup(r.text, "lxml")
@@ -387,7 +387,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                         painel_url,
                         data=data,
                         proxies=get_random_proxy(),
-                        verify=False,  # nosec B501
+                        verify=True,
                         timeout=5,
                         allow_redirects=True,
                     )
@@ -417,7 +417,7 @@ def bruteforce_com_usuarios(target_url, usuarios_encontrados):
                             )
                     time.sleep(0.2)
                 except requests.RequestException:
-                    pass
+                    continue
 
 
 def enumerar_vulnerabilidades(target_url):
@@ -443,7 +443,7 @@ def enumerar_vulnerabilidades(target_url):
             headers=headers,
             proxies=get_random_proxy(),
             timeout=5,
-            verify=False,  # nosec B501
+            verify=True,
         )
         if r.status_code == 200:
             users = r.json()
@@ -451,7 +451,7 @@ def enumerar_vulnerabilidades(target_url):
             if slugs:
                 bruteforce_com_usuarios(target_url, slugs)
     except requests.RequestException:
-        pass
+        return None
 
     pool = Pool(20)
 
@@ -463,7 +463,7 @@ def enumerar_vulnerabilidades(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,  # nosec B501
+                verify=True,
                 allow_redirects=True,
             )
             if r.status_code == 200 and len(r.text) > 50:
@@ -472,7 +472,7 @@ def enumerar_vulnerabilidades(target_url):
                     {"url": url, "description": descricao}
                 )
         except requests.RequestException:
-            pass
+            return None
 
     for path, desc in checks.items():
         pool.spawn(check_path, path, desc)
@@ -569,7 +569,7 @@ def launch_nuclear_osint(target_url):
                 headers=headers,
                 proxies=get_random_proxy(),
                 timeout=5,
-                verify=False,  # nosec B501
+                verify=True,
             )
             if r.status_code == 200:
                 print(
@@ -580,7 +580,7 @@ def launch_nuclear_osint(target_url):
                     {"payload": payload, "status": 200}
                 )
         except requests.RequestException:
-            pass
+            return None
 
     for payload in waf_bypass_payloads(target_url):
         pool.spawn(test_bypass, payload)
