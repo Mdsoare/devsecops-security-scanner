@@ -1,0 +1,13 @@
+# Configuração do markdownlint-cli2 para o repositório
+config:  
+  MD013: false # Ignora comprimento de linha
+  MD022: false # Ignora espaçamento de títulos
+  MD024: false # Permite títulos duplicados se estiverem em seções diferentes
+  MD031: false # Ignora espaçamento de blocos de código
+  MD033: false # Permite o uso de HTML inline (tags h1, table, img, span, etc.)
+  MD045: false # Ignora exigência de alt-text em imagens inline/HTML
+  MD047: false # Ignora exigência de quebra de linha no fim do arquivo
+    
+# Ignorar pastas de sistema ou dependências se houverem
+ignores:  
+  - "LICENSE"

@@ -31,11 +31,43 @@ jobs:
 
       - name: Scan para detecção de segredos
         uses: trufflesecurity/trufflehog@bcfcf73aaf4759d4dadc2783177c245a02792318
-        with:
-          extra_args: --only-verified
 
   # -------------------------------------------------------------
-  # JOB 2: Qualidade de Código e Linters (Python)
+  # JOB 2: Detecção de Segredos (Gitleaks)
+  # -------------------------------------------------------------
+  secret-scan-gitleaks:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks / Secret Scan
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # -------------------------------------------------------------
+  # JOB 3: Qualidade de Sintaxe Docs (Markdown)
+  # -------------------------------------------------------------
+  markdown-lint:
+    name: Lint Markdown Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Lint Markdown Files
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff
+        with:
+          globs: "**/*.md"
+
+  # -------------------------------------------------------------
+  # JOB 4: Qualidade de Código e Linters (Python)
   # -------------------------------------------------------------
   code-quality-linting:
     name: Code Quality (Flake8 & Black)
@@ -61,10 +93,10 @@ jobs:
 
       - name: Validar Formatação de Código (Black Check)
         run: |
-          black --check --diff devsecops_scanner.py
+          black --check --diff .
 
   # -------------------------------------------------------------
-  # JOB 3: Auditoria Nativa de Dependências (Pip-Audit)
+  # JOB 5: Auditoria Nativa de Dependências (Pip-Audit)
   # -------------------------------------------------------------
   sca-pip-audit:
     name: SCA (Pip-Audit)
@@ -90,7 +122,7 @@ jobs:
         run: pip-audit
 
   # -------------------------------------------------------------
-  # JOB 4: SAST Especializado em Python (Bandit)
+  # JOB 6: SAST Especializado em Python (Bandit)
   # -------------------------------------------------------------
   sast-bandit:
     name: SAST (Bandit Scan)
@@ -113,7 +145,7 @@ jobs:
           bandit -r . -x ./tests,./venv -ll
 
   # -------------------------------------------------------------
-  # JOB 5: SAST Avançado com CodeQL
+  # JOB 7: SAST Avançado com CodeQL
   # -------------------------------------------------------------
   sast-codeql:
     name: SAST (CodeQL Analysis)
@@ -133,7 +165,7 @@ jobs:
         uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
 
   # -------------------------------------------------------------
-  # JOB 6: SAST Open Source com Horusec
+  # JOB 8: SAST Open Source com Horusec
   # -------------------------------------------------------------
   sast-horusec:
     name: SAST (Horusec)
@@ -169,7 +201,7 @@ jobs:
           category: Horusec
 
   # -------------------------------------------------------------
-  # JOB 7: SAST Rápido baseado em Regras com Semgrep
+  # JOB 9: SAST Rápido baseado em Regras com Semgrep
   # -------------------------------------------------------------
   sast-semgrep:
     name: SAST (Semgrep Scan)
@@ -217,14 +249,14 @@ jobs:
           category: Semgrep
 
   # -------------------------------------------------------------
-  # JOB 8: Análise de Dependências de Software com OSV-Scanner
+  # JOB 10: Análise de Dependências de Software com OSV-Scanner
   # -------------------------------------------------------------
   sca-osv:
     name: SCA (OSV-Scanner)
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67
 
   # -------------------------------------------------------------
-  # JOB 9: Análise de Dependências e Misconfigurations com Trivy
+  # JOB 11: Análise de Dependências e Misconfigurations com Trivy
   # -------------------------------------------------------------
   sca-trivy:
     name: SCA & Misconfig (Trivy Scan)
@@ -243,14 +275,26 @@ jobs:
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
 
+      - name: Tratar e Validar SARIF do Trivy
+        id: check_sarif
+        if: always()
+        run: |
+          if [ -f "trivy-results.sarif" ] && grep -q '"results": \[.\+\]' trivy-results.sarif; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Trivy não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
+            echo "has_results=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload do Relatório SARIF do Trivy
         uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
-        if: always()
+        if: always() && steps.check_sarif.outputs.has_results == 'true'
         with:
           sarif_file: "trivy-results.sarif"
+          category: Trivy
 
   # -------------------------------------------------------------
-  # JOB 10: Validação de Integridade Estrutural do Projeto Python
+  # JOB 12: Validação de Integridade Estrutural do Projeto Python
   # -------------------------------------------------------------
   python-structure-check:
     name: Validate Python Structure
@@ -278,6 +322,8 @@ jobs:
     needs:
       [
         secret-scanning,
+        secret-scan-gitleaks,
+        markdown-lint,
         code-quality-linting,
         sca-pip-audit,
         sast-bandit,

@@ -4,3 +4,4 @@ colorama>=0.4.6
 gevent>=26.8.0
 dnspython>=2.8.0
 lxml>=6.1.1
+black==26.3.1
