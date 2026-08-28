@@ -315,7 +315,7 @@ jobs:
           echo "✅ Estrutura básica do repositório Python validada."
 
   # -------------------------------------------------------------
-  # JOB 11: Publicação e Build de Artefatos Python
+  # JOB 13: Publicação e Build de Artefatos Python
   # -------------------------------------------------------------
   build-artifact:
     name: Bundle & Upload Artifact
