@@ -187,15 +187,15 @@ jobs:
       - name: Tratar e Validar SARIF do Horusec
         if: always()
         run: |
-          if [ ! -s "./horusec-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec"}},"results":[]}]}' > ./horusec-results.sarif
+          if [ ! -s "horusec-results.sarif" ]; then
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[]}},"results":[]}]}' > horusec-results.sarif
           fi
 
       - name: Upload Horusec SARIF report
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
         if: always()
         with:
-          sarif_file: ./horusec-results.sarif
+          sarif_file: horusec-results.sarif
           category: Horusec
 
   # -------------------------------------------------------------
@@ -232,7 +232,7 @@ jobs:
         if: always()
         run: |
           if [ ! -s "semgrep.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Semgrep"}},"results":[]}]}' > semgrep.sarif
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Semgrep","rules":[]}},"results":[]}]}' > semgrep.sarif
           fi
 
       - name: Upload do Relatório SARIF do Semgrep
@@ -268,13 +268,13 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tratar e Validar SARIF do Trivy
         if: always()
         run: |
           if [ ! -s "trivy-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Trivy"}},"results":[]}]}' > trivy-results.sarif
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Trivy","rules":[]}},"results":[]}]}' > trivy-results.sarif
           fi
 
       - name: Upload do Relatório SARIF do Trivy
