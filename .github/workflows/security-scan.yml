@@ -195,7 +195,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
         if: always()
         with:
-          sarif_file: horusec-results.sarif
+          sarif_file: ./horusec-results.sarif
           category: Horusec
 
   # -------------------------------------------------------------
@@ -268,6 +268,7 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tratar e Validar SARIF do Trivy
         if: always()
