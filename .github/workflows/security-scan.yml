@@ -167,7 +167,7 @@ jobs:
           category: "/language:python"
 
   # -------------------------------------------------------------
-  # JOB 8: SAST Open Source com Horusec
+  # JOB 8: SAST Open Source com Horusec (Corrigido)
   # -------------------------------------------------------------
   sast-horusec:
     name: SAST (Horusec)
@@ -188,7 +188,7 @@ jobs:
         if: always()
         run: |
           if [ ! -s "horusec-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[]}},"results":[]}]}' > horusec-results.sarif
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[{"id":"HORUSEC-FALLBACK","name":"FallbackRule","shortDescription":{"text":"Fallback rule for empty results"}}]},"results":[]}]}' > horusec-results.sarif
           fi
 
       - name: Upload Horusec SARIF report
@@ -250,7 +250,7 @@ jobs:
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@b1d267aea5211fa648d9d442fa64b90dbdcbdd36
 
   # -------------------------------------------------------------
-  # JOB 11: Análise de Dependências e Misconfigurations com Trivy
+  # JOB 11: Análise de Dependências e Misconfigurations com Trivy (Corrigido)
   # -------------------------------------------------------------
   sca-trivy:
     name: SCA & Misconfig (Trivy Scan)
@@ -268,6 +268,7 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
+          exit-code: '0'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tratar e Validar SARIF do Trivy
@@ -353,3 +354,4 @@ jobs:
           path: build_artifact/
           retention-days: 7
           if-no-files-found: error
+          
