@@ -188,7 +188,7 @@ jobs:
         if: always()
         run: |
           if [ ! -s "horusec-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[{"id":"HORUSEC-FALLBACK","name":"FallbackRule","shortDescription":{"text":"Fallback rule for empty results"}}]},"results":[]}]}' > horusec-results.sarif
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[{"id":"HORUSEC-FALLBACK","name":"FallbackRule","shortDescription":{"text":"Fallback rule for empty results"}}]},"invocations":[{"executionSuccessful":true}],"results":[]}]}' > horusec-results.sarif
           fi
 
       - name: Upload Horusec SARIF report
@@ -269,7 +269,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
           exit-code: '0'
-          github-pat: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tratar e Validar SARIF do Trivy
         if: always()
@@ -354,4 +354,3 @@ jobs:
           path: build_artifact/
           retention-days: 7
           if-no-files-found: error
-          
