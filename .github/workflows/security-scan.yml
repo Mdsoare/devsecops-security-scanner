@@ -163,6 +163,8 @@ jobs:
 
       - name: Executar Análise CodeQL
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
+        with:
+          category: "/language:python"
 
   # -------------------------------------------------------------
   # JOB 8: SAST Open Source com Horusec
@@ -183,19 +185,15 @@ jobs:
           horusec start -p="./" --config-file-path="./.horusec-config.json" -D -I -e="false" -o="sarif" -O="./horusec-results.sarif" || true
 
       - name: Tratar e Validar SARIF do Horusec
-        id: check_sarif
         if: always()
         run: |
-          if [ -f "./horusec-results.sarif" ] && grep -q '"results": \[.\+\]' ./horusec-results.sarif; then
-            echo "has_results=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Horusec não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
-            echo "has_results=false" >> $GITHUB_OUTPUT
+          if [ ! -s "./horusec-results.sarif" ]; then
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec"}},"results":[]}]}' > ./horusec-results.sarif
           fi
 
       - name: Upload Horusec SARIF report
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
-        if: always() && steps.check_sarif.outputs.has_results == 'true'
+        if: always()
         with:
           sarif_file: horusec-results.sarif
           category: Horusec
@@ -230,20 +228,16 @@ jobs:
             --output=semgrep.sarif \
             || true
 
-      - name: Tratar e Validar SARIF do Semgrep
-        id: check_sarif
+      - name: Validar e Garantir Estrutura SARIF do Semgrep
         if: always()
         run: |
-          if [ -f "semgrep.sarif" ] && grep -q '"results": \[.\+\]' semgrep.sarif; then
-            echo "has_results=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Semgrep não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
-            echo "has_results=false" >> $GITHUB_OUTPUT
+          if [ ! -s "semgrep.sarif" ]; then
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Semgrep"}},"results":[]}]}' > semgrep.sarif
           fi
 
       - name: Upload do Relatório SARIF do Semgrep
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
-        if: always() && steps.check_sarif.outputs.has_results == 'true'
+        if: always()
         with:
           sarif_file: semgrep.sarif
           category: Semgrep
@@ -276,19 +270,15 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Tratar e Validar SARIF do Trivy
-        id: check_sarif
         if: always()
         run: |
-          if [ -f "trivy-results.sarif" ] && grep -q '"results": \[.\+\]' trivy-results.sarif; then
-            echo "has_results=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Trivy não encontrou vulnerabilidades ou o arquivo SARIF está vazio. Pulando upload."
-            echo "has_results=false" >> $GITHUB_OUTPUT
+          if [ ! -s "trivy-results.sarif" ]; then
+            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Trivy"}},"results":[]}]}' > trivy-results.sarif
           fi
 
       - name: Upload do Relatório SARIF do Trivy
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
-        if: always() && steps.check_sarif.outputs.has_results == 'true'
+        if: always()
         with:
           sarif_file: "trivy-results.sarif"
           category: Trivy
