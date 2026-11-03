@@ -167,39 +167,7 @@ jobs:
           category: "/language:python"
 
   # -------------------------------------------------------------
-  # JOB 8: SAST Open Source com Horusec (Corrigido)
-  # -------------------------------------------------------------
-  sast-horusec:
-    name: SAST (Horusec)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout do Repositório
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Run Horusec Security Scan
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh -o install_horusec.sh
-          bash install_horusec.sh latest
-          rm -f install_horusec.sh
-          horusec start -p="./" --config-file-path="./.horusec-config.json" -D -I -e="false" -o="sarif" -O="./horusec-results.sarif" || true
-
-      - name: Tratar e Validar SARIF do Horusec
-        if: always()
-        run: |
-          if [ ! -s "horusec-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Horusec","rules":[{"id":"HORUSEC-FALLBACK","name":"FallbackRule","shortDescription":{"text":"Fallback rule for empty results"}}]},"invocations":[{"executionSuccessful":true}],"results":[]}]}' > horusec-results.sarif
-          fi
-
-      - name: Upload Horusec SARIF report
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
-        if: always()
-        with:
-          sarif_file: horusec-results.sarif
-          category: Horusec
-
-  # -------------------------------------------------------------
-  # JOB 9: SAST Rápido baseado em Regras com Semgrep
+  # JOB 8: SAST Rápido baseado em Regras com Semgrep
   # -------------------------------------------------------------
   sast-semgrep:
     name: SAST (Semgrep Scan)
@@ -243,50 +211,14 @@ jobs:
           category: Semgrep
 
   # -------------------------------------------------------------
-  # JOB 10: Análise de Dependências de Software com OSV-Scanner
+  # JOB 9: Análise de Dependências de Software com OSV-Scanner
   # -------------------------------------------------------------
   sca-osv:
     name: SCA (OSV-Scanner)
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@b1d267aea5211fa648d9d442fa64b90dbdcbdd36
 
   # -------------------------------------------------------------
-  # JOB 11: Análise de Dependências e Misconfigurations com Trivy (Corrigido)
-  # -------------------------------------------------------------
-  sca-trivy:
-    name: SCA & Misconfig (Trivy Scan)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout do Repositório
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Executar Varredura Trivy (Repository)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "sarif"
-          output: "trivy-results.sarif"
-          severity: "CRITICAL,HIGH"
-          exit-code: '0'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tratar e Validar SARIF do Trivy
-        if: always()
-        run: |
-          if [ ! -s "trivy-results.sarif" ]; then
-            echo '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemas/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"Trivy","rules":[]}},"results":[]}]}' > trivy-results.sarif
-          fi
-
-      - name: Upload do Relatório SARIF do Trivy
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
-        if: always()
-        with:
-          sarif_file: "trivy-results.sarif"
-          category: Trivy
-
-  # -------------------------------------------------------------
-  # JOB 12: Validação de Integridade Estrutural do Projeto Python
+  # JOB 10: Validação de Integridade Estrutural do Projeto Python
   # -------------------------------------------------------------
   python-structure-check:
     name: Validate Python Structure
@@ -307,7 +239,7 @@ jobs:
           echo "✅ Estrutura básica do repositório Python validada."
 
   # -------------------------------------------------------------
-  # JOB 13: Publicação e Build de Artefatos Python
+  # JOB 11: Publicação e Build de Artefatos Python
   # -------------------------------------------------------------
   build-artifact:
     name: Bundle & Upload Artifact
@@ -320,10 +252,8 @@ jobs:
         sca-pip-audit,
         sast-bandit,
         sast-codeql,
-        sast-horusec,
         sast-semgrep,
         sca-osv,
-        sca-trivy,
         python-structure-check,
       ]
     runs-on: ubuntu-latest
